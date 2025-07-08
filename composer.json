@@ -1,0 +1,13 @@
+{
+  "name": "garavel/http",
+  "description": "The HTTP module of the Garavel framework",
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "garavel/support": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Garavel\\Routing\\": "src/"
+    }
+  }
+}
