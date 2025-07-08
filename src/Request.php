@@ -12,14 +12,7 @@ class Request
 	 * 
 	 * @var array
 	 */
-	public array $data;
-
-	/**
-	 * Server variables.
-	 * 
-	 * @var ServerVariables
-	 */
-	public ServerVariables $server;
+	public array $data = [];
 
 	/**
 	 * Constructor.
@@ -28,14 +21,36 @@ class Request
 	 * contents of php://input as an object to the array (if it exists).
 	 * The 'server' member is also initialized.
 	 */
-	public function __construct()
+	public function __construct( ...$data )
 	{
-		$_INPUT = json_decode(
-			file_get_contents( 'php://input' )
-		);
+		foreach( $data as $group )
+		{
+			$this->data = array_merge( $this->data, $group ?? [] );
+		}
+	}
 
-		$this->data = array_merge( $_POST, $_GET, (array) $_INPUT );
-		$this->server = new ServerVariables;
+	/**
+	 * Capture the current HTTP request data.
+	 *
+	 * Instantiates a new Request object with the global PHP variables
+	 * ($_GET, $_POST, $_SERVER, $_FILES, $_COOKIE) and the raw input
+	 * from 'php://input'.
+	 *
+	 * @return Request A new instance of the Request class initialized with
+	 *                 the current request data.
+	 */
+	public static function capture(): Request
+	{
+		return new static(
+			$_GET,
+			$_POST,
+			$_SERVER,
+			$_FILES,
+			$_COOKIE,
+			json_decode(
+				file_get_contents( 'php://input' )
+			)
+		);
 	}
 
 	/**
@@ -79,9 +94,9 @@ class Request
 	public function path(): string
 	{
 		return str_replace(
-			pathinfo( $this->server->get( 'SCRIPT_NAME' ))[ 'dirname' ] . '/',
+			pathinfo( $this->input( 'SCRIPT_NAME' ))[ 'dirname' ] . '/',
 			'',
-			$this->server->get( 'REDIRECT_URL' ) ?? ''
+			$this->input( 'REDIRECT_URL' ) ?? ''
 		);
 	}
 
@@ -95,7 +110,7 @@ class Request
 	public function method(): string
 	{
 		return strtoupper(
-			$this->server->get( 'REQUEST_METHOD' )
+			$this->input( 'REQUEST_METHOD' )
 		);
 	}
 
@@ -109,6 +124,6 @@ class Request
 	 */
 	public function ajax(): bool
 	{
-		return $this->server->get( 'HTTP_X_REQUESTED_WITH' ) == 'XmlHttpRequest';
+		return $this->input( 'HTTP_X_REQUESTED_WITH' ) == 'XmlHttpRequest';
 	}
 }
