@@ -15,6 +15,13 @@ class Request
 	public array $data = [];
 
 	/**
+	 * Instance of the Request class.
+	 *
+	 * @var Request|null
+	 */
+	protected static Request|null $instance = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * Merges the $_POST and $_GET variables together. Also adds the
@@ -41,7 +48,7 @@ class Request
 	 */
 	public static function capture(): Request
 	{
-		return new static(
+		return static::$instance = new static(
 			$_GET,
 			$_POST,
 			$_SERVER,
@@ -51,6 +58,16 @@ class Request
 				file_get_contents( 'php://input' )
 			)
 		);
+	}
+
+	/**
+	 * Returns the instance of the Request class.
+	 *
+	 * @return Request The instance of the Request class.
+	 */
+	public static function instance(): Request
+	{
+		return static::$instance;
 	}
 
 	/**
